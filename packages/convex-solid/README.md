@@ -1,24 +1,24 @@
-# convex-solid
+# 🥐 convex-solid
 
 SolidJS bindings for [Convex](https://convex.dev). Brings real-time queries, mutations, and actions to Solid with fine-grained reactivity via Solid stores.
 
-## Features
+## ✨ Features
 
-- **Real-time queries** — subscribe to Convex queries with automatic updates
-- **Fine-grained reactivity** — uses `createStore` + `reconcile` so only changed data triggers re-renders
-- **Query deduplication** — multiple components subscribing to the same query share one subscription
-- **Stale-while-revalidate** — optionally keep showing previous data while new args load
-- **30-second cache retention** — unmounted queries stay alive briefly so remounting is instant
-- **SSR-safe** — works with SolidStart out of the box
-- **Full TypeScript** — return types are inferred from your Convex function references
+- ⚡ **Real-time queries** — subscribe to Convex queries with automatic updates
+- 🎯 **Fine-grained reactivity** — uses `createStore` + `reconcile` so only changed data triggers re-renders
+- 🔗 **Query deduplication** — multiple components subscribing to the same query share one subscription
+- 🔄 **Stale-while-revalidate** — optionally keep showing previous data while new args load
+- 🕐 **30s cache retention** — unmounted queries stay alive briefly so remounting is instant
+- 🖥️ **SSR-safe** — works with SolidStart out of the box
+- 🦾 **Full TypeScript** — return types are inferred from your Convex function references
 
-## Installation
+## 📦 Installation
 
 ```bash
 npm install convex-solid convex solid-js @solid-primitives/context
 ```
 
-## Quick start
+## 🚀 Quick start
 
 ### 1. Wrap your app with `ConvexProvider`
 
@@ -78,7 +78,9 @@ function CreatePost() {
 }
 ```
 
-## API
+---
+
+## 📖 API
 
 ### `ConvexProvider`
 
@@ -92,6 +94,8 @@ Wraps your app and provides the Convex client to all hooks.
 
 On the server (`isServer`), the client is created in disabled mode — no WebSocket connections are opened during SSR.
 
+---
+
 ### `useConvexClient()`
 
 Returns the underlying `ConvexClient` instance for advanced use cases.
@@ -100,13 +104,15 @@ Returns the underlying `ConvexClient` instance for advanced use cases.
 const client = useConvexClient();
 ```
 
-### `useQuery(query, args?, options?)`
+---
+
+### `useQuery(query, args?, options?)` 🔍
 
 Subscribes to a Convex query and returns a reactive store.
 
 ```tsx
 const result = useQuery(api.posts.list);
-// or with args:
+// or with reactive args:
 const result = useQuery(api.posts.get, () => ({ id: postId() }));
 ```
 
@@ -127,13 +133,17 @@ const result = useQuery(api.posts.get, () => ({ id: postId() }));
 | `initialData`      | `T`                       | Data to show before the first result arrives          |
 | `keepPreviousData` | `boolean`                 | Keep showing old data when args change (sets `isStale`) |
 
-**Reactive args:** Pass an accessor to re-subscribe when args change:
+#### 🔁 Reactive args
+
+Pass an accessor to re-subscribe automatically when args change:
 
 ```tsx
 const post = useQuery(api.posts.get, () => ({ id: selectedId() }));
 ```
 
-**Conditional queries:** Use the `enabled` option:
+#### 🚦 Conditional queries
+
+Use the `enabled` option to control when a subscription is active:
 
 ```tsx
 const post = useQuery(api.posts.get, () => ({ id: id() }), {
@@ -141,7 +151,9 @@ const post = useQuery(api.posts.get, () => ({ id: id() }), {
 });
 ```
 
-### `useMutation(mutation)`
+---
+
+### `useMutation(mutation)` ✏️
 
 Returns a store for executing a Convex mutation.
 
@@ -160,7 +172,9 @@ await createPost.mutate({ title: "Hello", body: "World" });
 | `isLoading` | `boolean`                     | `true` while the mutation is running |
 | `reset`     | `() => void`                  | Clear `data` and `error`             |
 
-### `useAction(action)`
+---
+
+### `useAction(action)` ⚡
 
 Same API as `useMutation`, but for Convex actions.
 
@@ -169,23 +183,25 @@ const sendEmail = useAction(api.emails.send);
 await sendEmail.mutate({ to: "alice@example.com", body: "Hi!" });
 ```
 
-## Caching behavior
+---
 
-**Deduplication:** Multiple components calling `useQuery` with the same query + args share a single WebSocket subscription and store.
+## 🧠 Caching behavior
 
-**Retain on unmount:** When the last subscriber unmounts, the subscription stays alive for 30 seconds. If a component remounts within that window, it gets the cached data instantly with no loading flash.
+🔗 **Deduplication** — Multiple components calling `useQuery` with the same query + args share a single WebSocket subscription and store.
 
-**Stale-while-revalidate:** When args change and `keepPreviousData: true`, the store keeps showing the old data with `isStale: true` until the new result arrives.
+🕐 **Retain on unmount** — When the last subscriber unmounts, the subscription stays alive for 30 seconds. If a component remounts within that window, it gets the cached data instantly — no loading flash.
 
-## SSR
+🔄 **Stale-while-revalidate** — When args change and `keepPreviousData: true`, the store keeps showing the old data with `isStale: true` until the new result arrives.
+
+## 🖥️ SSR
 
 `ConvexProvider` creates the client with `{ disabled: true }` on the server. `useQuery` returns a static store during SSR:
 
-- If `initialData` is provided: `{ data: initialData, isLoading: false }`
-- Otherwise: `{ data: undefined, isLoading: true }`
+- If `initialData` is provided → `{ data: initialData, isLoading: false }`
+- Otherwise → `{ data: undefined, isLoading: true }`
 
 This ensures hydration matches — the client starts in the same loading state.
 
-## License
+## 📄 License
 
 MIT
