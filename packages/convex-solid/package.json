@@ -1,6 +1,26 @@
 {
   "name": "convex-solid",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "SolidJS bindings for Convex with real-time queries, fine-grained reactivity, and full TypeScript support",
+  "license": "MIT",
+  "author": "Wytze Sligting",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wytzepiet/convex-solid.git",
+    "directory": "packages/convex-solid"
+  },
+  "homepage": "https://github.com/wytzepiet/convex-solid#readme",
+  "keywords": [
+    "solid",
+    "solidjs",
+    "convex",
+    "reactive",
+    "real-time",
+    "database",
+    "baas",
+    "hooks",
+    "typescript"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,7 +37,9 @@
       }
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup"
   },

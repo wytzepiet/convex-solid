@@ -29,7 +29,14 @@ const AccountContext = createContext<{
 
 export function useAccount() {
   const ctx = useContext(AccountContext);
-  if (!ctx) throw new Error("useAccount must be used within App");
+  if (!ctx) {
+    // During SSR or HMR, the context may not be available yet.
+    return {
+      userId: () => undefined as Id<"users"> | undefined,
+      userName: () => "—",
+      setUserId: () => {},
+    };
+  }
   return ctx;
 }
 
