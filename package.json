@@ -1,0 +1,8 @@
+{
+  "name": "convex-solid-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ]
+}

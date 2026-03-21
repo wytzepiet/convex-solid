@@ -1,0 +1,23 @@
+node_modules
+dist
+bun.lock
+
+# Environment
+.env
+.env*.local
+
+# AI / IDE
+.agents
+.claude
+.cursor
+.kiro
+.idea
+.vscode
+.DS_Store
+
+# Build
+.output
+.vinxi
+.vercel
+.netlify
+.wrangler
