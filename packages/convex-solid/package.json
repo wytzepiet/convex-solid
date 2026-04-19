@@ -1,6 +1,6 @@
 {
   "name": "convex-solid",
-  "version": "1.0.0",
+  "version": "2.0.0-beta.1",
   "description": "SolidJS bindings for Convex with real-time queries, fine-grained reactivity, and full TypeScript support",
   "license": "MIT",
   "author": "Wytze Sligting",
@@ -44,16 +44,14 @@
     "build": "tsup"
   },
   "devDependencies": {
-    "@solid-primitives/context": "^0.2.3",
     "@types/bun": "latest",
     "convex": "^1.34.0",
-    "solid-js": "^1.9.0",
+    "solid-js": "^2.0.0-beta.7",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@solid-primitives/context": "^0.2.3",
     "convex": "^1.34.0",
-    "solid-js": "^1.9.0"
+    "solid-js": "^2.0.0-beta.4"
   }
 }

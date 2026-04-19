@@ -1,12 +1,12 @@
-# 🥐 convex-solid
+# convex-solid
 
-SolidJS bindings for [Convex](https://convex.dev) — reactive queries, mutations, and actions with fine-grained reactivity.
+SolidJS 2.0 bindings for [Convex](https://convex.dev) — real-time queries that suspend, mutations that return promises.
 
-📦 **[Package docs & API →](./packages/convex-solid)**
+**[Package docs & API →](./packages/convex-solid)**
 
-## 📁 Repository structure
+## Repository structure
 
 ```
 packages/convex-solid/   → the library
-examples/forum/          → demo forum app (SolidStart + Convex)
+examples/forum/          → demo forum app (Solid 2.0 + Vite + Convex)
 ```

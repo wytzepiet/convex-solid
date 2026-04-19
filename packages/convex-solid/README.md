@@ -1,24 +1,16 @@
-# 🥐 convex-solid
+# convex-solid
 
-SolidJS bindings for [Convex](https://convex.dev). Brings real-time queries, mutations, and actions to Solid with fine-grained reactivity via Solid stores.
+SolidJS 2.0 bindings for [Convex](https://convex.dev). Real-time queries that suspend, mutations that return promises, all with full TypeScript support.
 
-## ✨ Features
-
-- ⚡ **Real-time queries** — subscribe to Convex queries with automatic updates
-- 🎯 **Fine-grained reactivity** — uses `createStore` + `reconcile` so only changed data triggers re-renders
-- 🔗 **Query deduplication** — multiple components subscribing to the same query share one subscription
-- 🔄 **Stale-while-revalidate** — optionally keep showing previous data while new args load
-- 🕐 **30s cache retention** — unmounted queries stay alive briefly so remounting is instant
-- 🖥️ **SSR-safe** — works with SolidStart out of the box
-- 🦾 **Full TypeScript** — return types are inferred from your Convex function references
-
-## 📦 Installation
+## Installation
 
 ```bash
-npm install convex-solid convex solid-js @solid-primitives/context
+npm install convex-solid convex solid-js@next
 ```
 
-## 🚀 Quick start
+> Requires `solid-js ^2.0.0-beta.4`. For Solid 1.x, use `convex-solid@1`.
+
+## Quick start
 
 ### 1. Wrap your app with `ConvexProvider`
 
@@ -39,25 +31,24 @@ function App() {
 ```tsx
 import { useQuery } from "convex-solid";
 import { api } from "../convex/_generated/api";
-import { Show, For } from "solid-js";
+import { For, Loading } from "solid-js";
 
 function PostList() {
   const posts = useQuery(api.posts.list);
 
   return (
-    <>
-      <Show when={posts.isLoading}>
-        <p>Loading...</p>
-      </Show>
-      <For each={posts.data}>
-        {(post) => <div>{post.title}</div>}
+    <Loading fallback={<p>Loading...</p>}>
+      <For each={posts()} keyed={(p) => p._id}>
+        {(post) => <div>{post().title}</div>}
       </For>
-    </>
+    </Loading>
   );
 }
 ```
 
-### 3. Run mutations with `useMutation`
+`useQuery` returns an `Accessor<T>` that suspends until the first result arrives. Wrap it in a `<Loading>` boundary for fallback UI. The value updates in real-time as data changes on the server.
+
+### 3. Run mutations
 
 ```tsx
 import { useMutation } from "convex-solid";
@@ -66,21 +57,19 @@ import { api } from "../convex/_generated/api";
 function CreatePost() {
   const createPost = useMutation(api.posts.create);
 
-  const handleClick = async () => {
-    await createPost.mutate({ title: "Hello", body: "World" });
+  const handleClick = () => {
+    createPost({ title: "Hello", body: "World" });
   };
 
-  return (
-    <button onClick={handleClick} disabled={createPost.isLoading}>
-      Create Post
-    </button>
-  );
+  return <button onClick={handleClick}>Create Post</button>;
 }
 ```
 
+`useMutation` and `useAction` return plain async functions.
+
 ---
 
-## 📖 API
+## API
 
 ### `ConvexProvider`
 
@@ -92,116 +81,91 @@ Wraps your app and provides the Convex client to all hooks.
 </ConvexProvider>
 ```
 
-On the server (`isServer`), the client is created in disabled mode — no WebSocket connections are opened during SSR.
-
----
-
 ### `useConvexClient()`
 
-Returns the underlying `ConvexClient` instance for advanced use cases.
+Returns the underlying `ConvexClient` for advanced use cases.
 
 ```tsx
 const client = useConvexClient();
 ```
 
----
+### `useQuery(query, args?)`
 
-### `useQuery(query, args?, options?)` 🔍
-
-Subscribes to a Convex query and returns a reactive store.
+Subscribes to a Convex query. Returns `Accessor<T>` that suspends until data is ready.
 
 ```tsx
-const result = useQuery(api.posts.list);
-// or with reactive args:
-const result = useQuery(api.posts.get, () => ({ id: postId() }));
+const posts = useQuery(api.posts.list);
+const post = useQuery(api.posts.get, () => ({ id: params.id }));
 ```
 
-**Returns:** `Store<QueryState<T>>`
+- **Suspends** until the first result — use `<Loading>` for fallback UI
+- **Updates in real-time** as data changes on the server
+- **Reactive args** — pass an accessor to re-subscribe when args change
+- **Errors** propagate to `<Errored>` boundaries
 
-| Property    | Type              | Description                              |
-|-------------|-------------------|------------------------------------------|
-| `data`      | `T \| undefined`  | The query result                         |
-| `error`     | `Error \| undefined` | Error if the query failed             |
-| `isLoading` | `boolean`         | `true` while waiting for the first result |
-| `isStale`   | `boolean`         | `true` when showing previous data after args changed |
+#### Conditional queries
 
-**Options:**
-
-| Option             | Type                      | Description                                           |
-|--------------------|---------------------------|-------------------------------------------------------|
-| `enabled`          | `MaybeAccessor<boolean>`  | Disable/enable the subscription reactively            |
-| `initialData`      | `T`                       | Data to show before the first result arrives          |
-| `keepPreviousData` | `boolean`                 | Keep showing old data when args change (sets `isStale`) |
-
-#### 🔁 Reactive args
-
-Pass an accessor to re-subscribe automatically when args change:
+Use control flow to conditionally render components that use queries:
 
 ```tsx
-const post = useQuery(api.posts.get, () => ({ id: selectedId() }));
+<Show when={params.id}>
+  {(id) => {
+    const post = useQuery(api.posts.get, () => ({ id: id() }));
+    return <PostDetail post={post()} />;
+  }}
+</Show>
 ```
 
-#### 🚦 Conditional queries
+#### Fine-grained reactivity for lists
 
-Use the `enabled` option to control when a subscription is active:
+For large lists, opt into store-level reconciliation with `createProjection`:
 
 ```tsx
-const post = useQuery(api.posts.get, () => ({ id: id() }), {
-  enabled: () => id() !== undefined,
-});
+import { createProjection } from "solid-js";
+
+const posts = useQuery(api.posts.list);
+const postsStore = createProjection(() => posts(), [], { key: "_id" });
 ```
 
----
+### `useMutation(mutation)`
 
-### `useMutation(mutation)` ✏️
-
-Returns a store for executing a Convex mutation.
+Returns an async function to call a Convex mutation.
 
 ```tsx
 const createPost = useMutation(api.posts.create);
-await createPost.mutate({ title: "Hello", body: "World" });
+await createPost({ title: "Hello", body: "World" });
 ```
 
-**Returns:** `Store<MutationState<T>>`
+### `useAction(action)`
 
-| Property    | Type                          | Description                          |
-|-------------|-------------------------------|--------------------------------------|
-| `mutate`    | `(args) => Promise<T>`        | Call the mutation                    |
-| `data`      | `T \| undefined`              | Result of the last successful call   |
-| `error`     | `Error \| undefined`          | Error from the last failed call      |
-| `isLoading` | `boolean`                     | `true` while the mutation is running |
-| `reset`     | `() => void`                  | Clear `data` and `error`             |
-
----
-
-### `useAction(action)` ⚡
-
-Same API as `useMutation`, but for Convex actions.
+Returns an async function to call a Convex action.
 
 ```tsx
 const sendEmail = useAction(api.emails.send);
-await sendEmail.mutate({ to: "alice@example.com", body: "Hi!" });
+await sendEmail({ to: "alice@example.com", body: "Hi!" });
 ```
 
----
+## Loading and error UI
 
-## 🧠 Caching behavior
+Solid 2.0 uses `<Loading>` and `<Errored>` boundaries:
 
-🔗 **Deduplication** — Multiple components calling `useQuery` with the same query + args share a single WebSocket subscription and store.
+```tsx
+<Loading fallback={<Spinner />}>
+  <Errored fallback={(err, reset) => <ErrorPage error={err} retry={reset} />}>
+    <MyApp />
+  </Errored>
+</Loading>
+```
 
-🕐 **Retain on unmount** — When the last subscriber unmounts, the subscription stays alive for 30 seconds. If a component remounts within that window, it gets the cached data instantly — no loading flash.
+For "stale while revalidating" indicators, use `isPending`:
 
-🔄 **Stale-while-revalidate** — When args change and `keepPreviousData: true`, the store keeps showing the old data with `isStale: true` until the new result arrives.
+```tsx
+import { isPending } from "solid-js";
 
-## 🖥️ SSR
+const posts = useQuery(api.posts.list);
+const refreshing = () => isPending(posts);
+```
 
-`ConvexProvider` creates the client with `{ disabled: true }` on the server. `useQuery` returns a static store during SSR:
-
-- If `initialData` is provided → `{ data: initialData, isLoading: false }`
-- Otherwise → `{ data: undefined, isLoading: true }`
-
-This ensures hydration matches — the client starts in the same loading state.
-
-## 📄 License
+## License
 
 MIT

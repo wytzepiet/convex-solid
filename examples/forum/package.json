@@ -2,23 +2,17 @@
   "name": "example-forum",
   "type": "module",
   "scripts": {
-    "dev": "vinxi dev",
-    "build": "vinxi build",
-    "start": "vinxi start",
-    "preview": "vinxi preview"
+    "dev": "vite",
+    "build": "vite build"
   },
   "dependencies": {
-    "@solidjs/meta": "^0.29.4",
-    "@solidjs/router": "^0.15.0",
-    "@solidjs/start": "1.3.2",
-    "@solid-primitives/context": "^0.2.3",
     "convex": "^1.34.0",
     "convex-solid": "workspace:*",
-    "solid-js": "^1.9.5",
-    "vinxi": "^0.5.7"
+    "solid-js": "^2.0.0-beta.4"
   },
-  "engines": {
-    "node": ">=22"
-  },
-  "devDependencies": {}
+  "devDependencies": {
+    "@solidjs/web": "^2.0.0-beta.4",
+    "vite": "^6.0.0",
+    "vite-plugin-solid": "^3.0.0-next.3"
+  }
 }
